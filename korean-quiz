@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>국어 OX 퀴즈</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #ff6b6b;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .welcome-box {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .welcome-text {
+            font-size: 20px;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .text-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .text-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .text-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .text-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .quiz-info {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .current-text {
+            font-size: 20px;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .question-number {
+            font-size: 16px;
+            color: #999;
+        }
+
+        .question-box {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .question-text {
+            font-size: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .answer-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .ox-button {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: none;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .o-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .x-button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .ox-button:hover:not(:disabled) {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .ox-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .feedback {
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .explanation {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .next-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+            transition: transform 0.2s;
+        }
+
+        .next-button:hover {
+            transform: scale(1.05);
+        }
+
+        .result-box {
+            text-align: center;
+        }
+
+        .score {
+            font-size: 48px;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .quote {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .concepts {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .concepts h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .concepts ul {
+            list-style-position: inside;
+            color: #856404;
+        }
+
+        .concepts li {
+            margin: 8px 0;
+        }
+
+        .restart-button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .restart-button:hover {
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .text-button {
+                font-size: 16px;
+                padding: 15px;
+            }
+            .ox-button {
+                width: 80px;
+                height: 80px;
+                font-size: 32px;
+            }
+            .question-text {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 국어 OX 퀴즈</h1>
+
+        <div id="welcomeScreen">
+            <div class="welcome-box">
+                <p class="welcome-text">환영합니다!<br>이 사이트는 국어 학습 및 복습을 돕는 사이트입니다!<br><br>참여하시겠습니까?</p>
+                <button class="text-button" id="startButton">YES</button>
+            </div>
+        </div>
+
+        <div id="textSelection" class="hidden">
+            <div class="text-list" id="textList"></div>
+        </div>
+
+        <div id="loadingScreen" class="hidden">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>문제를 준비하고 있습니다...<br>잠시만 기다려주세요! 📚</p>
+            </div>
+        </div>
+
+        <div id="quizScreen" class="hidden">
+            <div class="quiz-info">
+                <div class="current-text" id="currentText"></div>
+                <div class="question-number" id="questionNumber"></div>
+            </div>
+
+            <div class="question-box">
+                <div class="question-text" id="questionText"></div>
+            </div>
+
+            <div class="answer-buttons" id="answerButtons">
+                <button class="ox-button o-button" id="oButton">O</button>
+                <button class="ox-button x-button" id="xButton">X</button>
+            </div>
+
+            <div id="feedback" class="hidden"></div>
+        </div>
+
+        <div id="resultScreen" class="hidden">
+            <div class="result-box">
+                <h2 id="resultTitle"></h2>
+                <div class="score" id="scoreDisplay"></div>
+                <div class="quote" id="motivationQuote"></div>
+                <div class="concepts" id="conceptsToStudy"></div>
+                <button class="restart-button" id="restartButton">다시 시작하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentTextName = '';
+        var currentQuestions = [];
+        var currentQuestionIndex = 0;
+        var firstAttemptCorrect = 0;
+        var wrongQuestions = [];
+        var isRetryMode = false;
+
+        var textNames = [
+            '난쟁이가 쏘아올린 작은 공',
+            '구두 아홉 켤레의 사나이',
+            '이생규장전',
+            '동동',
+            '광장',
+            '구운몽',
+            '강도몽유록'
+        ];
+
+        var quotes = [
+            '노력은 배신하지 않습니다. 오늘 공부한 것이 내일의 힘이 됩니다!',
+            '완벽함은 목표가 아니라 방향입니다. 계속 앞으로 나아가세요!',
+            '작은 성취도 축하받을 자격이 있습니다. 스스로를 칭찬하세요!',
+            '실패는 성공의 어머니입니다. 틀린 문제에서 더 많이 배웁니다!',
+            '꾸준함이 천재성을 이깁니다. 매일 조금씩 공부하세요!'
+        ];
+
+        // 각 작품별 문제 은행
+        var questionBank = {
+            '난쟁이가 쏘아올린 작은 공': [
+                {
+                    question: "이 작품은 조세희 작가의 연작소설이다.",
+                    answer: true,
+                    explanation: "정답입니다! '난쟁이가 쏘아올린 작은 공'은 조세희의 연작소설로, 1970년대 산업화 시대의 노동자 삶을 다룹니다."
+                },
+                {
+                    question: "이 작품의 시대적 배경은 1980년대이다.",
+                    answer: false,
+                    explanation: "오답입니다. 이 작품의 시대적 배경은 1970년대 산업화 시기입니다."
+                },
+                {
+                    question: "작품의 주인공 난쟁이는 철거민을 상징한다.",
+                    answer: true,
+                    explanation: "정답입니다! 난쟁이는 도시 개발 과정에서 소외된 철거민과 노동자를 상징합니다."
+                },
+                {
+                    question: "이 작품은 리얼리즘 계열의 소설이다.",
+                    answer: true,
+                    explanation: "정답입니다! 1970년대 노동자의 현실을 사실적으로 그린 리얼리즘 소설입니다."
+                },
+                {
+                    question: "작품에서 은강 아파트는 희망의 공간으로 그려진다.",
+                    answer: false,
+                    explanation: "오답입니다. 은강 아파트는 서민들이 접근할 수 없는 공간으로, 계층 간 격차를 상징합니다."
+                },
+                {
+                    question: "작품의 서술 시점은 1인칭 주인공 시점이다.",
+                    answer: false,
+                    explanation: "오답입니다. 이 작품은 주로 3인칭 관찰자 시점을 사용합니다."
+                },
+                {
+                    question: "이 작품은 1970년대 산업화의 어두운 면을 비판한다.",
+                    answer: true,
+                    explanation: "정답입니다! 급속한 산업화 과정에서 소외된 노동자와 빈민의 삶을 비판적으로 다룹니다."
+                },
+                {
+                    question: "작품 속 난쟁이의 직업은 공장 노동자이다.",
+                    answer: false,
+                    explanation: "오답입니다. 난쟁이의 직업은 철공소 일이지만, 주로 쪽방촌에서 생계를 유지하는 극빈층입니다."
+                }
+            ],
+            '구두 아홉 켤레의 사나이': [
+                {
+                    question: "이 작품은 윤흥길의 단편소설이다.",
+                    answer: true,
+                    explanation: "정답입니다! '구두 아홉 켤레의 사나이'는 윤흥길의 대표 단편소설입니다."
+                },
+                {
+                    question: "주인공은 가난 때문에 구두를 훔친다.",
+                    answer: false,
+                    explanation: "오답입니다. 주인공은 구두에 대한 병적인 집착 때문에 구두를 모읍니다."
+                },
+                {
+                    question: "작품의 시대적 배경은 6.25 전쟁 직후이다.",
+                    answer: true,
+                    explanation: "정답입니다! 전후의 혼란한 사회상을 배경으로 합니다."
+                },
+                {
+                    question: "구두는 주인공의 열등감과 욕망을 상징한다.",
+                    answer: true,
+                    explanation: "정답입니다! 구두는 주인공이 극복하지 못한 열등감과 물질적 욕망을 상징합니다."
+                },
+                {
+                    question: "작품은 해학적인 문체로 쓰여졌다.",
+                    answer: false,
+                    explanation: "오답입니다. 이 작품은 사실적이고 비판적인 문체로 쓰여졌습니다."
+                },
+                {
+                    question: "주인공의 구두 수집은 결국 비극으로 끝난다.",
+                    answer: true,
+                    explanation: "정답입니다! 주인공의 병적인 집착은 파멸로 이어집니다."
+                },
+                {
+                    question: "이 작품은 물질만능주의를 비판한다.",
+                    answer: true,
+                    explanation: "정답입니다! 전후 사회의 물질만능주의와 인간 소외를 비판합니다."
+                }
+            ],
+            '이생규장전': [
+                {
+                    question: "이 작품은 김시습의 한문소설이다.",
+                    answer: true,
+                    explanation: "정답입니다! '이생규장전'은 김시습의 '금오신화'에 수록된 한문소설입니다."
+                },
+                {
+                    question: "작품의 장르는 판소리계 소설이다.",
+                    answer: false,
+                    explanation: "오답입니다. 이 작품은 전기소설(傳奇小說)로 분류됩니다."
+                },
+                {
+                    question: "이생과 최랑은 전생의 인연으로 만난다.",
+                    answer: false,
+                    explanation: "오답입니다. 두 사람은 현생에서 우연히 만나 사랑에 빠집니다."
+                },
+                {
+                    question: "작품에서 최랑은 전쟁 중에 죽는다.",
+                    answer: true,
+                    explanation: "정답입니다! 최랑은 홍건적의 난으로 목숨을 잃습니다."
+                },
+                {
+                    question: "이생과 최랑은 죽어서 귀신이 되어 재회한다.",
+                    answer: true,
+                    explanation: "정답입니다! 최랑은 귀신이 되어 이생을 찾아옵니다."
+                },
+                {
+                    question: "작품의 주제는 남녀 간의 순수한 사랑이다.",
+                    answer: true,
+                    explanation: "정답입니다! 생사를 초월한 남녀의 애틋한 사랑이 주제입니다."
+                },
+                {
+                    question: "이 작품은 조선 후기에 쓰여졌다.",
+                    answer: false,
+                    explanation: "오답입니다. 이 작품은 조선 전기(15세기)에 쓰여졌습니다."
+                },
+                {
+                    question: "작품에는 유교적 도덕관이 강하게 나타난다.",
+                    answer: false,
+                    explanation: "오답입니다. 오히려 유교적 제약을 벗어난 자유로운 사랑을 그립니다."
+                }
+            ],
+            '동동': [
+                {
+                    question: "이 작품은 고려 가요이다.",
+                    answer: true,
+                    explanation: "정답입니다! '동동'은 고려시대의 궁중 가요입니다."
+                },
+                {
+                    question: "작품은 12월령체 형식을 따른다.",
+                    answer: true,
+                    explanation: "정답입니다! 정월부터 12월까지 월별로 구성된 12월령체입니다."
+                },
+                {
+                    question: "작품의 화자는 남성이다.",
+                    answer: false,
+                    explanation: "오답입니다. 화자는 임을 그리는 여성입니다."
+                },
+                {
+                    question: "후렴구 '아으 동동다리'가 반복된다.",
+                    answer: true,
+                    explanation: "정답입니다! 각 연마다 '아으 동동다리'라는 후렴구가 반복됩니다."
+                },
+                {
+                    question: "작품의 주제는 임에 대한 그리움이다.",
+                    answer: true,
+                    explanation: "정답입니다! 떠나간 임에 대한 여성 화자의 그리움을 노래합니다."
+                },
+                {
+                    question: "이 작품은 현대어로만 전승되었다.",
+                    answer: false,
+                    explanation: "오답입니다. 한글과 한자가 혼용된 형태로 전승되었습니다."
+                },
+                {
+                    question: "작품에서 계절의 변화는 시간의 흐름을 나타낸다.",
+                    answer: true,
+                    explanation: "정답입니다! 12달의 변화를 통해 세월의 흐름과 변함없는 사랑을 표현합니다."
+                }
+            ],
+            '광장': [
+                {
+                    question: "이 작품은 최인훈의 장편소설이다.",
+                    answer: true,
+                    explanation: "정답입니다! '광장'은 최인훈의 대표 장편소설입니다."
+                },
+                {
+                    question: "주인공 이명준은 남한을 선택한다.",
+                    answer: false,
+                    explanation: "오답입니다. 이명준은 남한도 북한도 아닌 중립국을 선택하려다 결국 바다에 투신합니다."
+                },
+                {
+                    question: "작품의 시대적 배경은 6.25 전쟁 전후이다.",
+                    answer: true,
+                    explanation: "정답입니다! 6.25 전쟁과 휴전 전후의 이념 대립을 배경으로 합니다."
+                },
+                {
+                    question: "'광장'은 공적 공간을, '밀실'은 사적 공간을 상징한다.",
+                    answer: true,
+                    explanation: "정답입니다! 광장과 밀실은 각각 공적 영역과 사적 영역을 상징합니다."
+                },
+                {
+                    question: "이명준은 남한 사회에서 만족을 느낀다.",
+                    answer: false,
+                    explanation: "오답입니다. 이명준은 남한과 북한 모두에서 소외감을 느낍니다."
+                },
+                {
+                    question: "작품은 이념 대립의 비극을 다룬다.",
+                    answer: true,
+                    explanation: "정답입니다! 남북 분단과 이념 대립 속에서 방황하는 개인의 비극을 그립니다."
+                },
+                {
+                    question: "이명준은 결국 중립국 행 배에서 투신한다.",
+                    answer: true,
+                    explanation: "정답입니다! 남과 북 어디에도 속하지 못한 이명준은 결국 바다에 몸을 던집니다."
+                },
+                {
+                    question: "작품은 1인칭 주인공 시점으로 서술된다.",
+                    answer: false,
+                    explanation: "오답입니다. 이 작품은 3인칭 전지적 작가 시점으로 서술됩니다."
+                }
+            ],
+            '구운몽': [
+                {
+                    question: "이 작품은 김만중이 한글로 쓴 소설이다.",
+                    answer: true,
+                    explanation: "정답입니다! '구운몽'은 김만중이 유배지에서 어머니를 위해 한글로 쓴 고전소설입니다."
+                },
+                {
+                    question: "주인공 성진은 팔선녀를 만난 후 속세로 내려온다.",
+                    answer: true,
+                    explanation: "정답입니다! 성진은 팔선녀와의 만남으로 인해 속세로 귀양을 가게 됩니다."
+                },
+                {
+                    question: "작품의 구조는 꿈-현실-꿈의 액자식 구성이다.",
+                    answer: true,
+                    explanation: "정답입니다! 성진의 꿈 이야기가 양소유의 일생을 담은 액자식 구조입니다."
+                },
+                {
+                    question: "양소유는 여덟 명의 부인을 둔다.",
+                    answer: true,
+                    explanation: "정답입니다! 양소유는 팔선녀가 환생한 여덟 명의 여인과 인연을 맺습니다."
+                },
+                {
+                    question: "작품의 주제는 유교 사상의 우월성이다.",
+                    answer: false,
+                    explanation: "오답입니다. 인생무상과 불교적 깨달음이 주요 주제입니다."
+                },
+                {
+                    question: "성진이 깨어난 후 모든 것이 꿈이었음을 깨닫는다.",
+                    answer: true,
+                    explanation: "정답입니다! 양소유의 영화로운 삶이 모두 꿈이었음을 깨닫고 불도에 정진합니다."
+                },
+                {
+                    question: "이 작품은 판소리계 소설이다.",
+                    answer: false,
+                    explanation: "오답입니다. '구운몽'은 몽자류 소설로 분류됩니다."
+                },
+                {
+                    question: "작품에는 유교, 불교, 도교 사상이 혼재되어 있다.",
+                    answer: true,
+                    explanation: "정답입니다! 유불도 삼교가 조화롭게 녹아있는 작품입니다."
+                }
+            ],
+            '강도몽유록': [
+                {
+                    question: "이 작품은 임제의 한문소설이다.",
+                    answer: true,
+                    explanation: "정답입니다! '강도몽유록'은 임제가 쓴 한문 몽유록계 소설입니다."
+                },
+                {
+                    question: "작품의 배경은 고려 시대이다.",
+                    answer: false,
+                    explanation: "오답입니다. 이 작품은 조선 후기를 배경으로 합니다."
+                },
+                {
+                    question: "주인공은 꿈속에서 역사 인물들을 만난다.",
+                    answer: true,
+                    explanation: "정답입니다! 꿈속에서 조선의 역사적 인물들을 만나 대화를 나눕니다."
+                },
+                {
+                    question: "작품은 병자호란의 치욕을 비판한다.",
+                    answer: true,
+                    explanation: "정답입니다! 병자호란 당시 항복한 주화파를 비판하고 척화파를 옹호합니다."
+                },
+                {
+                    question: "작품의 형식은 몽유록계 소설이다.",
+                    answer: true,
+                    explanation: "정답입니다! 꿈을 통해 현실을 비판하는 몽유록 형식을 따릅니다."
+                },
+                {
+                    question: "작품에서 주화파 인물들은 칭송받는다.",
+                    answer: false,
+                    explanation: "오답입니다. 주화파는 비판받고, 척화파는 옹호됩니다."
+                },
+                {
+                    question: "이 작품은 역사적 사실을 바탕으로 한다.",
+                    answer: true,
+                    explanation: "정답입니다! 병자호란이라는 역사적 사건을 바탕으로 합니다."
+                },
+                {
+                    question: "작품의 주제는 민족의식과 자주정신이다.",
+                    answer: true,
+                    explanation: "정답입니다! 외세에 굴복한 것을 비판하며 민족적 자긍심을 강조합니다."
+                }
+            ]
+        };
+
+        // 각 작품별 핵심 개념
+        var conceptBank = {
+            '난쟁이가 쏘아올린 작은 공': [
+                "연작소설의 특징과 구성",
+                "1970년대 산업화와 노동 문제",
+                "리얼리즘 문학의 특징",
+                "도시 빈민과 철거민의 삶"
+            ],
+            '구두 아홉 켤레의 사나이': [
+                "전후 사회의 물질만능주의",
+                "인간 소외와 정신적 공허",
+                "상징과 알레고리 기법",
+                "리얼리즘적 서술 방식"
+            ],
+            '이생규장전': [
+                "전기소설의 특징",
+                "금오신화의 문학사적 의의",
+                "생사를 초월한 사랑의 주제",
+                "조선 전기 한문소설"
+            ],
+            '동동': [
+                "고려 가요의 특징",
+                "12월령체 형식",
+                "여성 화자의 정서",
+                "후렴구의 기능과 효과"
+            ],
+            '광장': [
+                "분단 문학의 특징",
+                "이념 대립과 개인의 갈등",
+                "광장과 밀실의 상징성",
+                "실존주의적 주제"
+            ],
+            '구운몽': [
+                "몽자류 소설의 특징",
+                "액자식 구성",
+                "인생무상과 불교 사상",
+                "유불도 삼교의 조화"
+            ],
+            '강도몽유록': [
+                "몽유록계 소설의 특징",
+                "병자호란의 역사적 배경",
+                "민족의식과 자주정신",
+                "역사 인물의 평가와 비판"
+            ]
+        };
+
+        window.onload = function() {
+            document.getElementById('startButton').onclick = startQuiz;
+            document.getElementById('oButton').onclick = function() { checkAnswer(true); };
+            document.getElementById('xButton').onclick = function() { checkAnswer(false); };
+            document.getElementById('restartButton').onclick = restart;
+            createTextButtons();
+        };
+
+        function createTextButtons() {
+            var textList = document.getElementById('textList');
+            
+            for (var i = 0; i < textNames.length; i++) {
+                var textName = textNames[i];
+                var button = document.createElement('button');
+                button.className = 'text-button';
+                button.textContent = textName;
+                button.onclick = (function(name) {
+                    return function() { selectText(name); };
+                })(textName);
+                textList.appendChild(button);
+            }
+        }
+
+        function startQuiz() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('textSelection').classList.remove('hidden');
+        }
+
+        function selectText(textName) {
+            currentTextName = textName;
+            
+            // 로딩 화면 표시
+            document.getElementById('textSelection').classList.add('hidden');
+            document.getElementById('loadingScreen').classList.remove('hidden');
+            
+            // 문제 생성
+            setTimeout(function() {
+                generateQuestions(textName);
+            }, 800);
+        }
+
+        function generateQuestions(textName) {
+            try {
+                var allQuestions = questionBank[textName];
+                
+                // 랜덤하게 5개 선택
+                var shuffled = allQuestions.slice();
+                for (var i = shuffled.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var temp = shuffled[i];
+                    shuffled[i] = shuffled[j];
+                    shuffled[j] = temp;
+                }
+                
+                currentQuestions = shuffled.slice(0, 5);
+                currentQuestionIndex = 0;
+                firstAttemptCorrect = 0;
+                wrongQuestions = [];
+                isRetryMode = false;
+
+                // 퀴즈 시작
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('quizScreen').classList.remove('hidden');
+                showQuestion();
+
+            } catch (error) {
+                console.error('오류:', error);
+                alert('문제 생성에 실패했습니다. 다시 시도해주세요.');
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('textSelection').classList.remove('hidden');
+            }
+        }
+
+        function showQuestion() {
+            var question = currentQuestions[currentQuestionIndex];
+            
+            document.getElementById('currentText').textContent = currentTextName;
+            
+            if (isRetryMode) {
+                document.getElementById('questionNumber').textContent = '오답 체크 - ' + (currentQuestionIndex + 1) + '번째 문제';
+            } else {
+                document.getElementById('questionNumber').textContent = '문제 ' + (currentQuestionIndex + 1) + ' / 5';
+            }
+            
+            document.getElementById('questionText').textContent = question.question;
+            document.getElementById('oButton').disabled = false;
+            document.getElementById('xButton').disabled = false;
+            document.getElementById('answerButtons').classList.remove('hidden');
+            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('feedback').innerHTML = '';
+        }
+
+        function checkAnswer(userAnswer) {
+            var question = currentQuestions[currentQuestionIndex];
+            var isCorrect = userAnswer === question.answer;
+
+            document.getElementById('oButton').disabled = true;
+            document.getElementById('xButton').disabled = true;
+
+            var feedback = document.getElementById('feedback');
+            feedback.classList.remove('hidden', 'correct', 'incorrect');
+            
+            if (isCorrect) {
+                feedback.classList.add('correct');
+                feedback.innerHTML = '<strong>✅ 정답입니다!</strong>';
+                if (!isRetryMode) {
+                    firstAttemptCorrect++;
+                }
+            } else {
+                feedback.classList.add('incorrect');
+                feedback.innerHTML = '<strong>❌ 오답입니다!</strong><div class="explanation">' + question.explanation + '</div>';
+                if (!isRetryMode) {
+                    wrongQuestions.push(question);
+                }
+            }
+
+            var nextButton = document.createElement('button');
+            nextButton.className = 'next-button';
+            nextButton.textContent = '다음 문제';
+            nextButton.onclick = nextQuestion;
+            feedback.appendChild(nextButton);
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex >= currentQuestions.length) {
+                if (!isRetryMode && wrongQuestions.length > 0) {
+                    startRetryMode();
+                } else {
+                    showResult();
+                }
+            } else {
+                showQuestion();
+            }
+        }
+
+        function startRetryMode() {
+            isRetryMode = true;
+            currentQuestions = wrongQuestions.slice();
+            wrongQuestions = [];
+            currentQuestionIndex = 0;
+            alert('틀린 문제를 다시 풀어봅시다! 💪');
+            showQuestion();
+        }
+
+        function showResult() {
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+
+            var totalQuestions = 5;
+            var score = Math.round((firstAttemptCorrect / totalQuestions) * 100);
+
+            if (score === 100) {
+                document.getElementById('resultTitle').textContent = '🎉 축하합니다! 100점을 달성했습니다!';
+            } else {
+                document.getElementById('resultTitle').textContent = '수고하셨습니다!';
+            }
+
+            document.getElementById('scoreDisplay').textContent = firstAttemptCorrect + ' / ' + totalQuestions + ' (' + score + '점)';
+
+            var randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            document.getElementById('motivationQuote').textContent = randomQuote;
+
+            generateConcepts();
+        }
+
+        function generateConcepts() {
+            var concepts = conceptBank[currentTextName];
+            
+            var conceptsBox = document.getElementById('conceptsToStudy');
+            var html = '<h3>📌 보완하면 좋을 개념</h3><ul>';
+            for (var i = 0; i < concepts.length; i++) {
+                html += '<li>' + concepts[i] + '</li>';
+            }
+            html += '</ul>';
+            conceptsBox.innerHTML = html;
+        }
+
+        function restart() {
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('textSelection').classList.add('hidden');
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            
+            currentTextName = '';
+            currentQuestions = [];
+            currentQuestionIndex = 0;
+            firstAttemptCorrect = 0;
+            wrongQuestions = [];
+            isRetryMode = false;
+        }
+    </script>
+</body>
+</html>
